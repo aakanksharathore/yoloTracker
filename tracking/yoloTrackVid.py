@@ -44,24 +44,38 @@ def bbox_iou(box1, box2):
     
     return float(intersect) / union
 
-im_width = 3840 #864
-im_height = 2144#864
+#import tkinter to use diaglogue window for movie name
+import tkinter as tk
+from tkinter.filedialog import askopenfilename
+
+#Open the video file which needs to be processed     
+root = tk.Tk()
+movieName =  askopenfilename(initialdir='/media/aakanksha/f41d5ac2-703c-4b56-a960-cd3a54f21cfb/aakanksha/Documents/Backup/Phd/Analysis/',filetypes=[("Video files","*")])
+cap = cv2.VideoCapture(movieName)
+nframe =cap.get(cv2.CAP_PROP_FRAME_COUNT)
+step=300
+im_width = 1920#3840 #864
+im_height = 1088#2144#864
 obj_threshold=0.5; max_length=256;
 weight_file = '/media/aakanksha/f41d5ac2-703c-4b56-a960-cd3a54f21cfb/aakanksha/Documents/Backup/Phd/Analysis/blackbuckML/yoloTracker/weights/trained-blackbucks-yolo.h5'
 model = get_yolo_model(im_width, im_height, num_class=1)
 model.load_weights(weight_file,by_name=True)
-        
-
-test_dir = '/media/aakanksha/f41d5ac2-703c-4b56-a960-cd3a54f21cfb/aakanksha/Documents/Backup/Phd/Analysis/blackbuckML/testyolo/'
-test_images =  glob.glob( test_dir + "*.jpg" )
 im_num=0
-for imagename in test_images: 
-    image = cv2.imread(imagename)
-    im_num+=1
-    image_h, image_w, _ = image.shape
+width=1920
+height=1080
+#video = cv2.VideoWriter('/media/aakanksha/f41d5ac2-703c-4b56-a960-cd3a54f21cfb/aakanksha/Documents/Backup/Phd/Analysis/blackbuckML/testOut/video.avi',-1,1,(im_width,im_height))
 
-    image = cv2.resize(image, (im_width,im_height))
-    new_image = image[:,:,::-1]/255.
+while(cap.isOpened()):
+
+    if (cv2.waitKey(1) & 0xFF == ord('q')) | (im_num > nframe):
+         break
+    cap.set(cv2.CAP_PROP_POS_FRAMES,im_num) 
+    ret, img = cap.read()
+    im_num+=step
+    image_h, image_w, _ = img.shape
+
+    img = cv2.resize(img, (im_width,im_height))
+    new_image = img[:,:,::-1]/255.
     new_image = np.expand_dims(new_image, 0)
     
     # get detections
@@ -125,8 +139,11 @@ for imagename in test_images:
         maxx = bbox[2]
         maxy = bbox[3]
     
-        cv2.rectangle(image, (int(minx)-2, int(miny)-2), (int(maxx)+2, int(maxy)+2),(0,0,0), 1)
+        cv2.rectangle(img, (int(minx)-2, int(miny)-2), (int(maxx)+2, int(maxy)+2),(0,0,0), 1)
         
       
         #write output image
-    cv2.imwrite('/media/aakanksha/f41d5ac2-703c-4b56-a960-cd3a54f21cfb/aakanksha/Documents/Backup/Phd/Analysis/blackbuckML/testOut/'+ntpath.basename(imagename),image)    
+    cv2.imwrite('/media/aakanksha/f41d5ac2-703c-4b56-a960-cd3a54f21cfb/aakanksha/Documents/Backup/Phd/Analysis/blackbuckML/testOut/'+ntpath.basename(movieName[0:len(movieName)-4])+'_'+str(im_num)+'.png',img) 
+#    video.write(img)
+#cv2.destroyAllWindows()
+#video.release()

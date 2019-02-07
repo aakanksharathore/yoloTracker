@@ -20,7 +20,7 @@ def main(argv):
 
     np.set_printoptions(suppress=True)
     data_dir = root_dir + config['data_dir']
-    video_name_regex = "videos/*.mp4"
+    video_name_regex = "/media/aakanksha/f41d5ac2-703c-4b56-a960-cd3a54f21cfb/aakanksha/Documents/Backup/Phd/Analysis/Videos/25March_eve_01_5.avi"
     weights_dir = root_dir + config['weights_dir']
     your_weights = weights_dir + config['specific_weights']
     generic_weights = weights_dir + config['generic_weights']
@@ -30,12 +30,12 @@ def main(argv):
 
     #TODO allow different resolution
     width = 1920
-    height = 1080
+    height = 1088
 
     display = config['display']
     showDetections = config['showDetections']
 
-    filelist = glob.glob(data_dir + video_name_regex)
+    filelist = glob.glob(video_name_regex)
 
     for input_file in filelist:
         print(input_file)
@@ -59,7 +59,7 @@ def main(argv):
         ##########################################################################
         cap = cv2.VideoCapture(input_file)
         fps = round(cap.get(cv2.CAP_PROP_FPS))
-        S = (1920,1080)
+        S = (1920,1088)
         if display:
             fourCC = cv2.VideoWriter_fourcc('X','V','I','D')
             out = cv2.VideoWriter(video_file, fourCC, fps, S, True)
@@ -81,15 +81,22 @@ def main(argv):
 
 
 
-        frame_idx=0
+        i=0
         nframes = round(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-        for i in range(nframes):
+        step =100
+        frame_idx=0;
+        while(cap.isOpened()):
+
+            if (cv2.waitKey(1) & 0xFF == ord('q')) | (frame_idx > nframes):
+                break
+            cap.set(cv2.CAP_PROP_POS_FRAMES,frame_idx)
 
             sys.stdout.write('\r')
-            sys.stdout.write("[%-20s] %d%% %d/%d" % ('='*int(20*i/float(nframes)), int(100.0*i/float(nframes)), i,nframes)) 
+            sys.stdout.write("[%-20s] %d%% %d/%d" % ('='*int(20*i/float(nframes/step)), int(100.0*i/float(nframes/step)), i,int(nframes/step))) 
             sys.stdout.flush()
             ret, frame = cap.read() 
-
+            frame = cv2.resize(frame,S)
+            i+=1;
             if not(im1_gray.size):
                 # enhance contrast in the image
                 im1_gray = cv2.equalizeHist(cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY))
@@ -162,16 +169,16 @@ def main(argv):
                     cv2.putText(frame, str(int(track[4])),(int(minx)-5, int(miny)-5),0, 5e-3 * 200, (r,g,b),2)
 
                 results.append([frame_idx, track[4], bbox[0], bbox[1], bbox[2], bbox[3]])
-            frame_idx+=1
+            frame_idx+=step
 
-            if display:
-        #       cv2.imshow('', frame)
-        #       cv2.waitKey(10)
-        #       frame = cv2.resize(frame,S)
-            #   im_aligned = cv2.warpPerspective(frame, full_warp, (S[0],S[1]), borderMode=cv2.BORDER_TRANSPARENT, flags=cv2.WARP_INVERSE_MAP)
-                out.write(frame)
+            #if display:
+                #cv2.imshow('', frame)
+                #cv2.waitKey(10)
+                 #frame = cv2.resize(frame,S)
+             #   im_aligned = cv2.warpPerspective(frame, full_warp, (S[0],S[1]), borderMode=cv2.BORDER_TRANSPARENT, flags=cv2.WARP_INVERSE_MAP)
+                 #out.write(frame)
 
-            #cv2.imwrite('pout' + str(i) + '.jpg',frame)
+            cv2.imwrite(data_dir + '/tracks/'+'pout' + str(i) + '.jpg',frame)
     #   break
 
         with open(data_file, "w") as output:
