@@ -25,5 +25,7 @@ COORD_SCALE: 2.0
 CLASS_SCALE: 1.0
 
 #Running tracker
-display: 1
-showDetections: 1 # flag to show all detections in image
+display: 1 #flag to ouput images and videos
+showDetections: 0 # flag to show all detections in image
+start: 0 # frame number from where to start processing the video, set default as 1
+stop: 10 # frame number where to stop processing the video, set default as 10000000

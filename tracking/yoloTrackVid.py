@@ -53,17 +53,17 @@ root = tk.Tk()
 movieName =  askopenfilename(initialdir='/media/aakanksha/f41d5ac2-703c-4b56-a960-cd3a54f21cfb/aakanksha/Documents/Backup/Phd/Analysis/',filetypes=[("Video files","*")])
 cap = cv2.VideoCapture(movieName)
 nframe =cap.get(cv2.CAP_PROP_FRAME_COUNT)
-step=300
-im_width = 1920#3840 #864
-im_height = 1088#2144#864
+step=3000
+im_width = 3840 #1920#864
+im_height = 2176#1088#864
 obj_threshold=0.5; max_length=256;
 weight_file = '/media/aakanksha/f41d5ac2-703c-4b56-a960-cd3a54f21cfb/aakanksha/Documents/Backup/Phd/Analysis/blackbuckML/yoloTracker/weights/trained-blackbucks-yolo.h5'
 model = get_yolo_model(im_width, im_height, num_class=1)
 model.load_weights(weight_file,by_name=True)
 im_num=0
-width=1920
-height=1080
-#video = cv2.VideoWriter('/media/aakanksha/f41d5ac2-703c-4b56-a960-cd3a54f21cfb/aakanksha/Documents/Backup/Phd/Analysis/blackbuckML/testOut/video.avi',-1,1,(im_width,im_height))
+width=3840#1920
+height=2176#1080
+video = cv2.VideoWriter('/media/aakanksha/f41d5ac2-703c-4b56-a960-cd3a54f21cfb/aakanksha/Documents/Backup/Phd/Analysis/blackbuckML/testOut/video.avi',-1,1,(im_width,im_height))
 
 while(cap.isOpened()):
 
@@ -144,6 +144,6 @@ while(cap.isOpened()):
       
         #write output image
     cv2.imwrite('/media/aakanksha/f41d5ac2-703c-4b56-a960-cd3a54f21cfb/aakanksha/Documents/Backup/Phd/Analysis/blackbuckML/testOut/'+ntpath.basename(movieName[0:len(movieName)-4])+'_'+str(im_num)+'.png',img) 
-#    video.write(img)
-#cv2.destroyAllWindows()
-#video.release()
+    video.write(img)
+cv2.destroyAllWindows()
+video.release()
