@@ -174,9 +174,9 @@ def main(argv):
                 #cv2.waitKey(10)
                  #frame = cv2.resize(frame,S)
              #   im_aligned = cv2.warpPerspective(frame, full_warp, (S[0],S[1]), borderMode=cv2.BORDER_TRANSPARENT, flags=cv2.WARP_INVERSE_MAP)
-                out.write(frame)
+                #out.write(frame)
 
-                #cv2.imwrite(data_dir + '/tracks/'+'pout' + str(i) + '.jpg',frame)
+                cv2.imwrite(data_dir + '/tracks/'+'pout' + str(i) + '.jpg',frame)
     #   break
 
         with open(data_file, "w") as output:
