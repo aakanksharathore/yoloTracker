@@ -17,34 +17,40 @@ def main(argv):
     print('Opening config file' + root_dir + argv[2])
     with open(root_dir + argv[2], 'r') as configfile:
         config = yaml.safe_load(configfile)
+    print('Read config file.')
 
     np.set_printoptions(suppress=True)
     data_dir = root_dir + config['data_dir']
-    video_name_regex = "/media/aakanksha/f41d5ac2-703c-4b56-a960-cd3a54f21cfb/aakanksha/Documents/Backup/Phd/Analysis/Videos/video1.avi"
+    video_name_regex = config['test_videos_name_regex']
     weights_dir = root_dir + config['weights_dir']
+    tracks_dir = root_dir + config['tracks_dir']
     your_weights = weights_dir + config['specific_weights']
     generic_weights = weights_dir + config['generic_weights']
     trained_weights = weights_dir + config['trained_weights']
-    #train_images =  glob.glob( image_dir + "*.png" )
+    step_frames_n = config['step_frames']
+    #train_images =  glob.glob( image_dir + '*.png' )
     #video_file1 = 'out.avi'
 
     #TODO allow different resolution
-    width = 3840
+    width = 3480
     height = 2176
 
     display = config['display']
     showDetections = config['showDetections']
-    start = config['start']
-    stop = config['stop']
-    filelist = glob.glob(video_name_regex)
+
+    filelist = glob.glob(data_dir + video_name_regex)
+    print('There are ' + str( len(filelist) ) + ' files to process.\n')
+
     for input_file in filelist:
-        print(input_file)
+        print('Input vid:' + input_file)
         direct, ext = os.path.split(input_file)
         noext, _ = os.path.splitext(ext)
-        data_file = data_dir + '/tracks/' +  noext + '_POS.txt'
-        video_file = data_dir + '/tracks/' +  noext + '_TR.avi'
-
+        data_file = tracks_dir + '/' +  noext + '_POS.txt'
+        video_file = tracks_dir + '/' +  noext + '_TR.avi'
+        print('Tracks file: ' + str(data_file))
+        print('Videos file: ' + str(video_file))
         if os.path.isfile(data_file):
+            print('There is already output for this file. Skipping...')
             continue
         print(input_file, video_file)
         ##########################################################################
@@ -60,7 +66,7 @@ def main(argv):
         ##########################################################################
         cap = cv2.VideoCapture(input_file)
         fps = round(cap.get(cv2.CAP_PROP_FPS))
-        S = (3840,2176)
+        S = (width,height)
         if display:
             fourCC = cv2.VideoWriter_fourcc('X','V','I','D')
             out = cv2.VideoWriter(video_file, fourCC, fps, S, True)
@@ -81,20 +87,22 @@ def main(argv):
         full_warp = np.eye(3, 3, dtype=np.float32)
 
 
-
-        i=0
+        frame_idx=0
         nframes = round(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-        frame_idx=0;
-        for i in range(nframes):
+        print('frames total: ' + str(nframes) +' frames')
+        print('step: ' + str(step_frames_n) + ' frame(s)')
+
+        for i in range(1,nframes,step_frames_n):
 
             sys.stdout.write('\r')
-            sys.stdout.write("[%-20s] %d%% %d/%d" % ('='*int(20*i/float(nframes)), int(100.0*i/float(nframes)), i,nframes)) 
+            sys.stdout.write('[%-20s] %d%% %d/%d' % ('='*int(20*i/float(nframes)), int(100.0*i/float(nframes)), i,nframes))
             sys.stdout.flush()
-            ret, frame = cap.read() 
-            if (i<start):
-                continue;
-            if  (i>stop): 
-                break;
+            for sf in range(step_frames_n):
+                #make sure we do not try to read over the frame number
+                if (i + sf) == nframes:
+                    break;
+                ret, frame = cap.read()
+
             if not(im1_gray.size):
                 # enhance contrast in the image
                 im1_gray = cv2.equalizeHist(cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY))
@@ -167,19 +175,19 @@ def main(argv):
                     cv2.putText(frame, str(int(track[4])),(int(minx)-5, int(miny)-5),0, 5e-3 * 200, (r,g,b),2)
 
                 results.append([frame_idx, track[4], bbox[0], bbox[1], bbox[2], bbox[3]])
-            frame_idx+=i
+            frame_idx+=1
 
-            if (display & (i%3==0)):
-                #cv2.imshow('', %rame)
-                #cv2.waitKey(10)
-                 #frame = cv2.resize(frame,S)
-             #   im_aligned = cv2.warpPerspective(frame, full_warp, (S[0],S[1]), borderMode=cv2.BORDER_TRANSPARENT, flags=cv2.WARP_INVERSE_MAP)
+            if display:
+        #       cv2.imshow('', frame)
+        #       cv2.waitKey(10)
+                frame = cv2.resize(frame,S)
+            #   im_aligned = cv2.warpPerspective(frame, full_warp, (S[0],S[1]), borderMode=cv2.BORDER_TRANSPARENT, flags=cv2.WARP_INVERSE_MAP)
                 out.write(frame)
 
-                #cv2.imwrite(data_dir + '/tracks/'+'pout' + str(i) + '.jpg',frame)
+            #cv2.imwrite('pout' + str(i) + '.jpg',frame)
     #   break
 
-        with open(data_file, "w") as output:
+        with open(data_file, 'w') as output:
             writer = csv.writer(output, lineterminator='\n')
             writer.writerows(results)
     #   break
@@ -190,3 +198,4 @@ def main(argv):
 
 if __name__ == '__main__':
     main(sys.argv)
+

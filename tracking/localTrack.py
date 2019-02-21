@@ -44,8 +44,8 @@ def bbox_iou(box1, box2):
     
     return float(intersect) / union
 
-im_width = 3840 #864
-im_height = 2144#864
+im_width = 3840 #1920#864
+im_height = 2176#1088#864
 obj_threshold=0.5; max_length=256;
 weight_file = '/media/aakanksha/f41d5ac2-703c-4b56-a960-cd3a54f21cfb/aakanksha/Documents/Backup/Phd/Analysis/blackbuckML/yoloTracker/weights/trained-blackbucks-yolo.h5'
 model = get_yolo_model(im_width, im_height, num_class=1)
@@ -53,7 +53,7 @@ model.load_weights(weight_file,by_name=True)
         
 
 test_dir = '/media/aakanksha/f41d5ac2-703c-4b56-a960-cd3a54f21cfb/aakanksha/Documents/Backup/Phd/Analysis/blackbuckML/testyolo/'
-test_images =  glob.glob( test_dir + "*.jpg" )
+test_images =  glob.glob( test_dir + "*.png" )
 im_num=0
 for imagename in test_images: 
     image = cv2.imread(imagename)
@@ -125,8 +125,8 @@ for imagename in test_images:
         maxx = bbox[2]
         maxy = bbox[3]
     
-        cv2.rectangle(image, (int(minx)-2, int(miny)-2), (int(maxx)+2, int(maxy)+2),(0,0,0), 1)
+        cv2.rectangle(image, (int(minx)-2, int(miny)-2), (int(maxx)+2, int(maxy)+2),(255,0,0), 1)
         
       
         #write output image
-    cv2.imwrite('/media/aakanksha/f41d5ac2-703c-4b56-a960-cd3a54f21cfb/aakanksha/Documents/Backup/Phd/Analysis/blackbuckML/testOut/'+ntpath.basename(imagename),image)    
+    cv2.imwrite('/media/aakanksha/f41d5ac2-703c-4b56-a960-cd3a54f21cfb/aakanksha/Documents/Backup/Phd/Analysis/blackbuckML/testOut/samp'+ntpath.basename(imagename),image)    
